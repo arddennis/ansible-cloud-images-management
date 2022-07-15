@@ -1,0 +1,19 @@
+---
+name: Deploy Test
+on: [push, pull_request]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      max-parallel: 2
+      matrix:
+        jobs: ["lint", "ansible-latest"]
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install dependencies
+        run: |
+          sudo apt remove ansible
+          sudo apt install tox
+      - name: Test using tox
+        run: |
+          sudo -H -E tox -e ${{ matrix.jobs }}
