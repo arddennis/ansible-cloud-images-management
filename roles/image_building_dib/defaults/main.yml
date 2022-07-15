@@ -1,3 +1,23 @@
 ---
 # defaults file for image_building_dib
 cim_builder_input: {}
+
+# From https://opendev.org/openstack/diskimage-builder/src/branch/master/bindep.txt
+cim_image_building_dib_packages:
+  - binutils
+  - bzip2
+  - util-linux
+  - dosfstools
+  - gdisk
+  - kpartx
+  - sudo
+  - curl
+  - git
+  - squashfs-tools
+  - qemu-utils
+  - apt-transport-https
+  - rpm
+  - uuid-runtime
+  - debootstrap
+  - zstd
+  - procps
