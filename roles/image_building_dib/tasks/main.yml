@@ -2,3 +2,11 @@
 # tasks file for image_building_dib
 # set_fact:
 #   cim_builder_artifacts: {}
+- name: Installing packages
+  ansible.builtin.package:
+    name: "{{ cim_image_building_dib_packages }}"
+
+- name: Installing dib
+  ansible.builtin.pip:
+    name: "diskimage-builder"
+    state: present
