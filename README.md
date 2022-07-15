@@ -1,4 +1,6 @@
-# Ansible Cloud Images Management
+# Ansible Collection - evrardjp.images_management - Ansible Cloud Images Management
+
+Documentation for the collection.
 
 ## Reason of existence
 
