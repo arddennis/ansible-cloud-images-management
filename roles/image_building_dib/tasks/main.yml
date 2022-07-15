@@ -1,2 +1,4 @@
 ---
 # tasks file for image_building_dib
+# set_fact:
+#   cim_builder_artifacts: {}

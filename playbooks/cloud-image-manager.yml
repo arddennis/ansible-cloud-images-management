@@ -1,0 +1,94 @@
+---
+- hosts: localhost
+  gather_facts: no
+  connection: local
+  vars:
+    # We build image per image, so that:
+    # 1) CI can be very explicit about the image to build
+    # 2) CI can build in parallel
+    # 3) Code is easier to read
+    # CIM means cloud image manager.
+    # With a name like that, very unlikely to be overwritten by other vars by mistake.
+    cim_imageinfo:
+      builder:
+      - role: 'image_building_dib'
+        input: {}
+      uploader:
+      - role: 'image_upload_openstack'
+        input: {}
+      #- role: 'image_upload_openstack'
+      #  input: {}
+      tester:
+      - role: 'image_testing_tempest'
+        input: {}
+      promoter:
+      - role: 'image_promote_openstack'
+        input: {}
+  tasks:
+      - name: Input validation
+        ansible.builtin.assert:
+          that: "{{ item.conditions }}"
+          fail_msg: "{{ item.fail_msg }}"
+        loop:
+          - conditions:
+              - "{{ cim_imageinfo is defined }}"
+            fail_msg: "Base input is not provided"
+          - conditions:
+              - "{{ cim_imageinfo['builder'] | default({}) | length == 1 }}"
+            fail_msg: "Builder data incorrect. Building need one (and not more) roles."
+          - conditions:
+              - "{{ cim_imageinfo['uploader'] | default({}) | length > 0 }}"
+            fail_msg: "At least one uploader is required"
+          - conditions:
+              - "{{ cim_imageinfo['tester'] | default({}) | length > 0 }}"
+            fail_msg: "At least one tester is required"
+          - conditions:
+              - "{{ cim_imageinfo['promoter'] | default({}) | length > 0 }}"
+            fail_msg: "At least one promoter is required"
+
+      - name: Image building
+        block:
+          # The role is responsible to set a fact about the image artifact location (cim_builder_artifacts)
+          - name: Building image with dib
+            ansible.builtin.include_role:
+              name: "{{ cim_imageinfo['builder'][0]['role'] }}"
+            vars:
+              cim_builder_input: "{{ cim_imageinfo['builder'][0]['input'] }}"
+
+          - name: Show artifact details
+            ansible.builtin.debug:
+              msg: "{{ cim_builder_artifacts }}"
+        rescue:
+        - debug:
+            msg: "Something went wrong"
+
+      - name: Image testing
+        block:
+          - name: Upload image
+            include_role:
+              name: "{{ item.role }}"
+            vars:
+              cim_uploader_input: "{{ item.input }}"
+            loop: "{{ cim_imageinfo['uploader'] }}"
+            loop_control:
+              label: "{{ item.name | default(item.role) }}"
+            
+          - name: Testing image
+            include_role:
+              name: "{{ item.role }}"
+            vars:
+              cim_tester_input: "{{ item.input }}"
+            loop: "{{ cim_imageinfo['tester'] }}"
+            loop_control:
+              label: "{{ item.name | default(item.role) }}"
+            
+      - name: Image promotion
+        block:
+          - name: Promote image
+            include_role:
+              name: "{{ item.role }}"
+            vars:
+              cim_promoter_input: "{{ item.input }}"
+            loop: "{{ cim_imageinfo['promoter'] }}"
+            loop_control:
+              label: "{{ item.name | default(item.role) }}"
