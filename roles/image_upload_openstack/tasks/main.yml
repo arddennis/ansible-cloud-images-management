@@ -1,4 +1,5 @@
 ---
 # tasks file for image_upload_openstack
-- debug:
+- name: Debug task
+  ansible.builtin.debug:
     var: cim_uploader_input

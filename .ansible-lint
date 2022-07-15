@@ -1,0 +1,4 @@
+warn_list:
+  # warn (instead of erroring/ignoring if using skip_list)
+  # all rules tagged as experimental
+  - experimental
