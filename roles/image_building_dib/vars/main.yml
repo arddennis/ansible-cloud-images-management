@@ -1,2 +1,41 @@
 ---
 # vars file for image_building_dib
+cim_dib_package: "diskimage-builder=={{ cim_dib_version }}"
+cim_dib_executable: "{{ cim_dib_venv }}/bin/disk-image-create"
+cim_images_to_build: "{{ cim_image_info.keys()|list }}"
+cim_ready_images: {}
+#output_file_name: {}
+#output_file_path: {}
+
+
+
+
+#cim_images_to_build: "{%- set images_list = [] -%}
+#                      {%- for image in cim_image_info.keys() -%}
+#                      {%- set _= images_list.append(image) -%}
+#                      {%- endfor -%}
+#                      {%- images_list -%}
+#                     "
+#cim_verify_conditions:
+#  - conditions:
+#    - "{{ cim_imageinfo is defined }}"
+#    fail_msg: "Base input is not provided"
+#  - conditions:
+#    - "{{ cim_imageinfo['builder'] | default({}) | length == 1 }}"
+#    fail_msg: "Builder data incorrect. Building need one (and not more) roles."
+#cim_verify_vars_to_check:
+#  - distro_name
+#  - distro_release
+#
+#cim_verify_conditions:  "{%- set temp_list = [] -%}
+#                         {%- for image, details in cim_image_info.items() -%}
+#                         {%-   for vars in cim_verify_vars_to_check -%}
+#                         {%- set temp_dic = {} -%}
+#                         {%-   -%}
+#                         {%- set _= temp_dic.update({'conditions':  }) -%}
+#                         {%- set _= temp_dic.update({'value': vars.value }) -%}
+#                         {%- set _= temp_dic.update({'path': '/var/lib/mock/' + item + '/root/builddir/build/BUILDROOT' + Default_Home_String }) -%}
+#                         {%- set _= temp_list.append(temp_dic) -%}
+#                         {%- endfor -%}
+#                         {%- endfor -%}
+#                         {{- temp_list -}}"

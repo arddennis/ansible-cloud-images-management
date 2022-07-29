@@ -3,10 +3,85 @@
 # set_fact:
 #   cim_builder_artifacts: {}
 - name: Installing packages
+  become: yes
   ansible.builtin.package:
     name: "{{ cim_image_building_dib_packages }}"
-
-- name: Installing dib
-  ansible.builtin.pip:
-    name: "diskimage-builder"
     state: present
+    use: apt
+
+# there is no option to have pip package updated at first
+- name: create DIB virtualenv
+  become: yes
+  # become_user: "{{ cim_system_user }}"
+  ansible.builtin.pip:
+    name: "pip"
+    state: "present"
+    extra_args: "--upgrade"
+    virtualenv: "{{ cim_dib_venv|default(omit) }}"
+    virtualenv_python: "{{ cim_dib_python_version|default(omit) }}"
+    virtualenv_command: "{{ cim_dib_venv_command|default(omit) }}"
+
+- name: prepare DIB virtualenv
+  become: yes
+  # become_user: "{{ cim_system_user }}"
+  ansible.builtin.pip:
+    name: "{{ cim_dib_package }}"
+    virtualenv: "{{ cim_dib_venv|default(omit) }}"
+    virtualenv_python: "{{ dib_python_version|default(omit) }}"
+    virtualenv_command: "{{ dib_venv_command|default(omit) }}"
+
+- name: Ensure build dir exist
+  become: yes
+  ansible.builtin.file:
+    path: "{{ cim_build_dir }}"
+    state: directory
+    mode: '0755'
+
+- name: "Build defined images"
+  vars:
+    output_file_name: {}
+    output_file_path: {}
+  block:
+    - name: "Define output filenames for defined images "
+      ansible.builtin.set_fact:
+        output_file_name: "{{ output_file_name| combine({item.key: 
+          (item.value.distro_name,
+          item.value.distro_release,
+          ansible_date_time.epoch)| join('_')}) }}"
+      loop: "{{ cim_image_info | dict2items }}"
+
+    - name: "Define output file path for defined images"
+      set_fact:
+        output_file_path: "{{ output_file_path| combine({item:
+          (cim_build_dir, output_file_name[item]) | path_join}) }}"
+      loop: "{{ cim_images_to_build }}"
+
+    - name: "build images using DIB... This may take a while."
+      vars:
+        output_arg: "-o {{ output_file_path[item] }}"
+        dib_args: "{{
+          [cim_dib_executable] + [output_arg] + ['--checksum'] +
+          [cim_image_info[item].distro_name] + cim_image_info[item].elements }}"
+        env_vars:
+          DIB_RELEASE:  "{{ cim_image_info[item].distro_release }}"
+          ELEMENTS_PATH: "{{ cim_elements_path }}"
+      become: yes
+      environment:
+          "{{ cim_image_info[item].env_vars| combine(env_vars) }}"
+      ansible.builtin.command:
+        argv: "{{ dib_args }}"
+      register: build_results
+      loop: "{{ cim_images_to_build }}"
+
+    - name: "Register ready image {{ im_imageinfo.image_label }}"
+      ansible.builtin.set_fact:
+        cim_ready_images: "{{ cim_ready_images| combine(
+          { item.item: output_file_path[item.item] }) }}"
+      when: "item.rc == 0"
+      loop: "{{ build_results.results }}"
+
+    - name: "debug output"
+      ansible.builtin.debug:
+        msg: "{{ cim_ready_images }}"
+
+

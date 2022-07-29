@@ -1,0 +1,41 @@
+---
+- hosts: clsand
+  gather_facts: true
+  vars:
+    cim_image_info:
+      'Ubuntu 22.04':
+        distro_name: 'ubuntu'
+        distro_release: 'jammy'
+        elements:
+          - vm
+          - cloud-init-datasources
+        env_vars:
+          DIB_CLOUD_INIT_DATASOURCES: 'OpenStack'
+      'Ubuntu 20.04':
+        distro_name: 'ubuntu'
+        distro_release: 'focal'
+        elements:
+          - vm
+          - cloud-init-datasources
+        env_vars:
+          DIB_CLOUD_INIT_DATASOURCES: 'OpenStack'
+    cim_elements_path: /opt/data/dib-elements/
+    cim_external_elements:
+      - 'git@github.com:citynetwork/dib-elements.git'
+    cim_dib_venv: /opt/venv/dib_by_ansible
+    cim_build_dir: /opt/imagebuild/
+    cim_clean_build_dir: False
+
+  tasks:
+    - name: Input validation. Image details provided.
+      ansible.builtin.assert:
+        that:
+          - "{{ item.value.distro_name is defined }}"
+          - "{{ item.value.distro_release is defined }}"
+        fail_msg: "Defined image {{ item.key }} is missing details..."
+      loop: "{{ cim_image_info | dict2items }}"
+    - name: Image building
+      ansible.builtin.include_role:
+        name: image_building_dib
+
+

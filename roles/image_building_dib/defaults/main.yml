@@ -21,3 +21,50 @@ cim_image_building_dib_packages:
   - debootstrap
   - zstd
   - procps
+  - parted
+  - python3-virtualenv
+
+cim_dib_version: '3.22.0'
+
+# cim_dib_venv: If defined, virtualenv will be used instead of global package
+# installation.
+# Default: not defined
+# Example:
+#
+# cim_dib_venv: "/opt/dib_venv"
+
+# cim_dib_python_version: Define a python version to use for the virtualenv.
+# Default. not defined. use the same python version as used in ansible
+# Example:
+#
+# cim_dib_python_version: /usr/bin/python3.8
+
+# dib_venv_command: Defines how to invoke a venv module. Either trough module or
+# using virtualenv command...
+# Default: not defined.
+# Example:
+# dib_venv_command: "/usr/bin/python3.8 -m venv"
+
+# cim_system_user: Defines a user different from the one used for login. Used during
+# venv installation.
+# Default: not defined
+# Example:
+#
+# cim_system_user: ubuntu
+
+# cim_image_info: Define list of dicts (images to build). Each list is a dict of
+# {label: {distro_name:, distro_release:, elements, env_vars:} Example:
+#  'Ubuntu 22.04':
+#    distro_name: 'ubuntu'
+#    distro_release: 'jammy'
+#    elements:
+#      - vm
+#      - cloud-init-datasources
+#    env_vars:
+#      DIB_CLOUD_INIT_DATASOURCES: 'OpenStack'
+#
+# label: will be used to identitify image and this is the main name of the image
+# distro_name: DIB element corresponding to required "operation system" (OS)
+# distro_release: OS version
+# elements: list of additional DIB elements used to bild the image
+# env_vars: List of defined options trough environment variables for DIB
