@@ -1,5 +1,51 @@
 ---
 # tasks file for image_upload_openstack
-- name: Debug task
-  ansible.builtin.debug:
-    var: cim_uploader_input
+#- name: Debug task
+#  ansible.builtin.debug:
+#    var: cim_uploader_input
+
+- name: Installing packages
+  become: yes
+  ansible.builtin.package:
+    name: "{{ cim_image_upload_packages }}"
+    state: present
+    use: apt
+
+- name: read images checksums from dib files
+  ansible.builtin.command:
+    argv:
+      - "cat"
+      - "{{ item.value }}.qcow2.sha256"
+  loop: "{{ dbg_ready_images | dict2items }}"
+  register: cim_checksums_result
+  changed_when: false
+
+- name: define images checksums var
+  ansible.builtin.set_fact:
+    ready_images_checksums: "{{ ready_images_checksums| combine({
+      item.item.key: item.stdout.split()[0]}) }}"
+  loop: "{{ cim_checksums_result.results }}"
+
+#- name: Debug task
+#  ansible.builtin.debug:
+#    var: ready_images_checksums
+
+- include_tasks: upload.yml
+  loop: "{{ dbg_ready_images | dict2items }}"
+  loop_control:
+    loop_var: image_for_upload
+
+#- name: Debug task
+#  ansible.builtin.debug: var=item[0]
+#  when: item[0] in cim_cloud_providers[item[1]].images.keys()
+#  loop: "{{ dbg_ready_images | product(cim_cloud_providers.keys()) | list }}"
+
+#
+# wait: no
+
+#- name: Debug task
+#  ansible.builtin.debug: var=item[0]
+#  when: item[0] in cim_cloud_providers[item[1]].images.keys()
+#  loop: "{{ dbg_ready_images | product(cim_cloud_providers.keys()) | list }}"
+
+

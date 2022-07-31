@@ -30,6 +30,13 @@
     virtualenv_python: "{{ dib_python_version|default(omit) }}"
     virtualenv_command: "{{ dib_venv_command|default(omit) }}"
 
+- name: Clean build dir
+  become: yes
+  ansible.builtin.file:
+    path: "{{ cim_build_dir }}"
+    state: absent
+  when: cim_clean_build_dir
+
 - name: Ensure build dir exist
   become: yes
   ansible.builtin.file:
@@ -37,6 +44,7 @@
     state: directory
     mode: '0755'
 
+# is loop_control is better than dicts?
 - name: "Build defined images"
   vars:
     output_file_name: {}
@@ -71,7 +79,13 @@
       ansible.builtin.command:
         argv: "{{ dib_args }}"
       register: build_results
+      async: 600
+      poll: 10
       loop: "{{ cim_images_to_build }}"
+      loop_control:
+        label: "{{ item }}"
+      ignore_errors: yes
+      # retries: 5
 
     - name: "Register ready image {{ im_imageinfo.image_label }}"
       ansible.builtin.set_fact:
@@ -80,8 +94,6 @@
       when: "item.rc == 0"
       loop: "{{ build_results.results }}"
 
-    - name: "debug output"
-      ansible.builtin.debug:
-        msg: "{{ cim_ready_images }}"
-
-
+#    - name: "debug output"
+#      ansible.builtin.debug:
+#        msg: "{{ cim_ready_images }}"

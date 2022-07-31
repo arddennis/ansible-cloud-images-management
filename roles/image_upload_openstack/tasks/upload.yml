@@ -1,0 +1,24 @@
+---
+
+- name: upload images
+  openstack.cloud.image:
+    auth: "{{ cim_cloud_providers[item.key].auth }}"
+    name: "{{ image_for_upload.key }}"
+    container_format: bare
+    disk_format: qcow2
+    state: present
+    is_public: no
+    filename: "{{ image_for_upload.value }}.qcow2"
+    min_disk: "{{ item.value.images[image_for_upload.key].min_disk| default(10) }}"
+    min_ram: "{{ item.value.images[image_for_upload.key].min_ram| default(1024) }}"
+    validate_certs: "{{ item.value.validate_certs }}"
+    timeout: "{{ item.value.timeout }}"
+    checksum: "{{ ready_images_checksums[image_for_upload.key] }}"
+    tags:
+      - image_manager
+    properties: "{{ item.value.images[image_for_upload.key].properties | default([]) }}"
+  when: image_for_upload.key in item.value.images.keys()
+  loop: "{{ cim_cloud_providers | dict2items }}"
+  register: cim_upload_results
+
+#- name: Define uploaded images

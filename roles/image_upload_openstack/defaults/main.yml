@@ -1,2 +1,32 @@
 ---
 # defaults file for image_upload_openstack
+
+cim_image_upload_packages:
+  - python3-openstackclient
+  - python3-openstacksdk
+
+# cim_cloud_providers:
+#  cm_sandbox:
+#    auth:
+#      auth_url: https://identity.example.com
+#      username: admin
+#      password: passme
+#      project_name: admin
+#      openstack.cloud.identity_user_domain_name: Default
+#      openstack.cloud.project_domain_name: Default
+#    images:
+#      'Ubuntu 22.04':
+#        ''
+#      'Ubuntu 20.04':
+#        ''
+#
+# or
+# cim_cloud_providers:
+#  cm_sandbox:
+#      cloud: ccdev01-sandbox
+#    images:
+#      'Ubuntu 22.04':
+#        ''
+#      'Ubuntu 20.04':
+#        ''
+

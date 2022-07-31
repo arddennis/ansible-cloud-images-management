@@ -4,6 +4,7 @@ cim_dib_package: "diskimage-builder=={{ cim_dib_version }}"
 cim_dib_executable: "{{ cim_dib_venv }}/bin/disk-image-create"
 cim_images_to_build: "{{ cim_image_info.keys()|list }}"
 cim_ready_images: {}
+cim_build_time: "{{ ansible_date_time.epoch }}"
 #output_file_name: {}
 #output_file_path: {}
 
