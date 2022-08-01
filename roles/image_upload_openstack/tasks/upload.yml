@@ -19,6 +19,31 @@
     properties: "{{ item.value.images[image_for_upload.key].properties | default([]) }}"
   when: image_for_upload.key in item.value.images.keys()
   loop: "{{ cim_cloud_providers | dict2items }}"
+  async: 600
+  poll: 0
   register: cim_upload_results
+
+- name: Debug task
+  ansible.builtin.debug:
+    var: cim_upload_results
+
+
+- name: Register watch variable
+  set_fact:
+    cim_upload_status: "{{ cim_upload_status| combine({item.item.key: item.ansible_job_id}) }}"
+  loop: "{{ cim_upload_results.results }}"
+
+- name: Debug task
+  ansible.builtin.debug:
+    var: cim_upload_status
+
+
+#- name: Waiting for upload to complete
+#  async_status:
+#    jid: "{{ cim_upload_results.results.ansible_job_id }}"
+#  register: job_result
+#  until: job_result.finished
+#  retries: 200
+#  delay: 10
 
 #- name: Define uploaded images

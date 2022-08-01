@@ -1,3 +1,4 @@
 ---
 # vars file for image_upload_openstack
 ready_images_checksums: {}
+cim_upload_status: {}

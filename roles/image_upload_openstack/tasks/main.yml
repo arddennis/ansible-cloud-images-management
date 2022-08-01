@@ -16,7 +16,7 @@
     argv:
       - "cat"
       - "{{ item.value }}.qcow2.sha256"
-  loop: "{{ dbg_ready_images | dict2items }}"
+  loop: "{{ cim_ready_images | dict2items }}"
   register: cim_checksums_result
   changed_when: false
 
@@ -31,7 +31,7 @@
 #    var: ready_images_checksums
 
 - include_tasks: upload.yml
-  loop: "{{ dbg_ready_images | dict2items }}"
+  loop: "{{ cim_ready_images | dict2items }}"
   loop_control:
     loop_var: image_for_upload
 

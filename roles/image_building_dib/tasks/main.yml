@@ -55,7 +55,7 @@
         output_file_name: "{{ output_file_name| combine({item.key: 
           (item.value.distro_name,
           item.value.distro_release,
-          ansible_date_time.epoch)| join('_')}) }}"
+          cim_build_time)| join('_')}) }}"
       loop: "{{ cim_image_info | dict2items }}"
 
     - name: "Define output file path for defined images"
