@@ -27,23 +27,22 @@
   ansible.builtin.debug:
     var: cim_upload_results
 
-
 - name: Register watch variable
   set_fact:
-    cim_upload_status: "{{ cim_upload_status| combine({item.item.key: item.ansible_job_id}) }}"
+    cim_upload_status: "{{ cim_upload_status + [item.ansible_job_id] }}"
   loop: "{{ cim_upload_results.results }}"
 
 - name: Debug task
   ansible.builtin.debug:
     var: cim_upload_status
 
-
-#- name: Waiting for upload to complete
-#  async_status:
-#    jid: "{{ cim_upload_results.results.ansible_job_id }}"
-#  register: job_result
-#  until: job_result.finished
-#  retries: 200
-#  delay: 10
+- name: Waiting for upload to complete
+  async_status:
+    jid: "{{ item }}"
+  register: job_result
+  until: job_result.finished
+  retries: 200
+  delay: 10
+  loop: "{{ cim_upload_status }}"
 
 #- name: Define uploaded images
